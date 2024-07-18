@@ -16,6 +16,8 @@ const uri = process.env.MONGODB_URI;
 if (!uri) {
   throw new Error('MONGODB_URI environment variable is not defined');
 }
+console.log('Connecting to MongoDB with URI:', uri); // Add this line for logging
+
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
@@ -66,6 +68,7 @@ app.put('/api/farms/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
 
 
 //const express = require('express');
