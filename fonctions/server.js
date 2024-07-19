@@ -39,7 +39,7 @@ const farmSchema = new mongoose.Schema({
 const Farm = mongoose.model('Farm', farmSchema);
 
 // Routes
-app.get('/api/farms', async (req, res) => {
+app.get('/.netlify/functions/api/farms', async (req, res) => {
   try {
     const farms = await Farm.find();
     res.json(farms);
@@ -49,7 +49,7 @@ app.get('/api/farms', async (req, res) => {
   }
 });
 
-app.post('/api/farms', async (req, res) => {
+app.post('/.netlify/functions/api/farms', async (req, res) => {
   try {
     const newFarm = new Farm(req.body);
     const savedFarm = await newFarm.save();
@@ -60,7 +60,7 @@ app.post('/api/farms', async (req, res) => {
   }
 });
 
-app.put('/api/farms/:id', async (req, res) => {
+app.put('/.netlify/functions/api/farms/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const updatedFarm = await Farm.findByIdAndUpdate(id, req.body, { new: true });
@@ -73,7 +73,6 @@ app.put('/api/farms/:id', async (req, res) => {
 
 // Export the handler for Netlify Functions
 module.exports.handler = serverless(app);
-
 
 
 
