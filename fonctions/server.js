@@ -12,6 +12,8 @@ const port = process.env.PORT || 5000;
 app.use(bodyParser.json());
 app.use(cors({
   origin: 'https://farme-manager.netlify.app', // Allow requests from your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // MongoDB connection
