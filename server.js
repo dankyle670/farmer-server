@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,11 +12,18 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // MongoDB connection
-const uri = process.env.MONGODB_URI; // This environment variable should be set in Netlify
-console.log(`Connecting to MongoDB with URI: ${uri}`);
-mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 }) // Updated options
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  console.error('MONGODB_URI is not defined');
+} else {
+  console.log(`Connecting to MongoDB with URI: ${uri}`);
+}
+mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    console.error('Error details:', JSON.stringify(err, null, 2));
+  });
 
 // Define schema and model
 const farmSchema = new mongoose.Schema({
@@ -63,6 +71,7 @@ app.put('/api/farms/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
 
 
 
