@@ -1,5 +1,6 @@
 [build]
   functions = "functions"
+  command = ""
 
 [build.environment]
   NODE_VERSION = "20"  # Update this to the version you are using
