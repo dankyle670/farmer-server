@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -12,10 +13,17 @@ console.log('MONGODB_URI:', process.env.MONGODB_URI);
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+
+const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app'];
+
+app.use(cors((req, callback) => {
+  let corsOptions;
+  if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] };
+  } else {
+    corsOptions = { origin: false };
+  }
+  callback(null, corsOptions);
 }));
 
 // MongoDB connection
@@ -79,20 +87,25 @@ app.put('/api/farms/:id', async (req, res) => {
 module.exports.handler = serverless(app);
 
 
-
-
 //const express = require('express');
 //const mongoose = require('mongoose');
 //const bodyParser = require('body-parser');
 //const cors = require('cors');
 //require('dotenv').config();
+//const serverless = require('serverless-http');
 //
 //const app = express();
-//const port = process.env.PORT || 5000;
+//
+//// Debugging to check if the environment variable is loaded
+//console.log('MONGODB_URI:', process.env.MONGODB_URI);
 //
 //// Middleware
 //app.use(bodyParser.json());
-//app.use(cors());
+//app.use(cors({
+//  origin: '*',
+//  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//  allowedHeaders: ['Content-Type', 'Authorization']
+//}));
 //
 //// MongoDB connection
 //const uri = process.env.MONGODB_URI;
@@ -150,67 +163,6 @@ module.exports.handler = serverless(app);
 //    res.status(500).json({ error: 'Failed to update farm' });
 //  }
 //});
-//
-//app.listen(port, () => {
-//  console.log(`Server running on port ${port}`);
-//});
 
-
-
-
-//const express = require('express');
-//const mongoose = require('mongoose');
-//const bodyParser = require('body-parser');
-//const cors = require('cors');
-//
-//const app = express();
-//const port = process.env.PORT || 5000;
-//
-//// Middleware
-//app.use(bodyParser.json());
-//app.use(cors());
-//
-//// MongoDB connection
-//const uri = 'mongodb+srv://jdanielkom:1PhU4kEdZnDAECN5@cluster0.tw4eyui.mongodb.net/';
-//mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-//  .then(() => console.log('MongoDB connected'))
-//  .catch(err => console.log(err));
-//
-//// Define schema and model
-//const farmSchema = new mongoose.Schema({
-//  name: String,
-//  location: String,
-//  area: Number,
-//  chickens: Number
-//});
-//
-//const Farm = mongoose.model('Farm', farmSchema);
-//
-//// Routes
-//app.get('/api/farms', async (req, res) => {
-//  const farms = await Farm.find();
-//  res.json(farms);
-//});
-//
-//app.post('/api/farms', async (req, res) => {
-//  const newFarm = new Farm(req.body);
-//  const savedFarm = await newFarm.save();
-//  res.json(savedFarm);
-//});
-//
-//app.put('/api/farms/:id', async (req, res) => {
-//  const { id } = req.params;
-//  const { name, location, area, chickens } = req.body;
-//
-//  try {
-//    const updatedFarm = await Farm.findByIdAndUpdate(id, { name, location, area, chickens }, { new: true });
-//    res.json(updatedFarm);
-//  } catch (error) {
-//    console.error('Error updating farm:', error);
-//    res.status(500).json({ error: 'Failed to update farm' });
-//  }
-//});
-//
-//app.listen(port, () => {
-//  console.log(`Server running on port ${port}`);
-//});
+// Export the handler for Netlify Functions
+module.exports.handler = serverless(app);
