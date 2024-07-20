@@ -13,7 +13,7 @@ console.log('MONGODB_URI:', process.env.MONGODB_URI);
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-  origin: 'https://farme-manager.netlify.app',
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
