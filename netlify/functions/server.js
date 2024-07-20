@@ -7,14 +7,10 @@ const serverless = require('serverless-http');
 
 const app = express();
 
-// Debugging to check if the environment variable is loaded
-console.log('MONGODB_URI:', process.env.MONGODB_URI);
-
 // Middleware
 app.use(bodyParser.json());
 
 const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app', 'http://localhost:3000'];
-
 app.use(cors((req, callback) => {
   let corsOptions;
   if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
@@ -47,7 +43,15 @@ const farmSchema = new mongoose.Schema({
   chickens: Number
 });
 
+const logSchema = new mongoose.Schema({
+  user: String,
+  ip: String,
+  action: String,
+  date: { type: Date, default: Date.now }
+});
+
 const Farm = mongoose.model('Farm', farmSchema);
+const Log = mongoose.model('Log', logSchema);
 
 // Routes
 app.get('/api/farms', async (req, res) => {
@@ -64,6 +68,7 @@ app.post('/api/farms', async (req, res) => {
   try {
     const newFarm = new Farm(req.body);
     const savedFarm = await newFarm.save();
+    logAction(req, 'Create New Farm');
     res.status(201).json(savedFarm);
   } catch (error) {
     console.error('Error creating farm:', error);
@@ -71,28 +76,41 @@ app.post('/api/farms', async (req, res) => {
   }
 });
 
-app.put('/api/farms/:id', async (req, res) => {
-  const { id } = req.params;
+const logAction = async (req, actionDescription) => {
+  const logData = {
+    user: req.body.user || 'Unknown', // Adjust as needed to fetch user details
+    ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+    action: actionDescription
+  };
+
   try {
-    const updatedFarm = await Farm.findByIdAndUpdate(id, req.body, { new: true });
-    res.json(updatedFarm);
+    const newLog = new Log(logData);
+    await newLog.save();
   } catch (error) {
-    console.error('Error updating farm:', error);
-    res.status(500).json({ error: 'Failed to update farm' });
+    console.error('Error logging action:', error);
+  }
+};
+
+app.post('/api/logs', async (req, res) => {
+  try {
+    const newLog = new Log(req.body);
+    const savedLog = await newLog.save();
+    res.status(201).json(savedLog);
+  } catch (error) {
+    console.error('Error logging action:', error);
+    res.status(500).json({ error: 'Failed to log action' });
   }
 });
 
-app.delete('/api/farms/:id', async (req, res) => {
-  const { id } = req.params;
+app.get('/api/logs', async (req, res) => {
   try {
-    await Farm.findByIdAndDelete(id);
-    res.status(204).end();
+    const logs = await Log.find();
+    res.json(logs);
   } catch (error) {
-    console.error('Error deleting farm:', error);
-    res.status(500).json({ error: 'Failed to delete farm' });
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs' });
   }
 });
-
 
 if (process.env.NODE_ENV === 'development') {
   const PORT = process.env.PORT || 5000;
@@ -120,7 +138,7 @@ if (process.env.NODE_ENV === 'development') {
 //// Middleware
 //app.use(bodyParser.json());
 //
-//const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app',];
+//const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app', 'http://localhost:3000'];
 //
 //app.use(cors((req, callback) => {
 //  let corsOptions;
@@ -134,7 +152,6 @@ if (process.env.NODE_ENV === 'development') {
 //
 //// MongoDB connection
 //const uri = process.env.MONGODB_URI;
-//
 //if (!uri) {
 //  console.error('MONGODB_URI is not defined');
 //} else {
@@ -190,5 +207,24 @@ if (process.env.NODE_ENV === 'development') {
 //  }
 //});
 //
-//// Export the handler for Netlify Functions
-//module.exports.handler = serverless(app);
+//app.delete('/api/farms/:id', async (req, res) => {
+//  const { id } = req.params;
+//  try {
+//    await Farm.findByIdAndDelete(id);
+//    res.status(204).end();
+//  } catch (error) {
+//    console.error('Error deleting farm:', error);
+//    res.status(500).json({ error: 'Failed to delete farm' });
+//  }
+//});
+//
+//
+//if (process.env.NODE_ENV === 'development') {
+//  const PORT = process.env.PORT || 5000;
+//  app.listen(PORT, () => {
+//    console.log(`Server is running on http://localhost:${PORT}`);
+//  });
+//} else {
+//  // Export the handler for Netlify Functions
+//  module.exports.handler = serverless(app);
+//}
