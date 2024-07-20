@@ -7,10 +7,13 @@ const serverless = require('serverless-http');
 
 const app = express();
 
+// Debugging to check if the environment variable is loaded
+console.log('MONGODB_URI:', process.env.MONGODB_URI);
+
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-  origin: 'https://farme-manager.netlify.app', // Allow requests from your frontend domain
+  origin: 'https://farme-manager.netlify.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -74,6 +77,7 @@ app.put('/api/farms/:id', async (req, res) => {
 
 // Export the handler for Netlify Functions
 module.exports.handler = serverless(app);
+
 
 
 
