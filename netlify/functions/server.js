@@ -1,4 +1,3 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -14,7 +13,7 @@ console.log('MONGODB_URI:', process.env.MONGODB_URI);
 // Middleware
 app.use(bodyParser.json());
 
-const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app'];
+const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app', 'http://localhost:3000'];
 
 app.use(cors((req, callback) => {
   let corsOptions;
@@ -83,8 +82,27 @@ app.put('/api/farms/:id', async (req, res) => {
   }
 });
 
-// Export the handler for Netlify Functions
-module.exports.handler = serverless(app);
+app.delete('/api/farms/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Farm.findByIdAndDelete(id);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error deleting farm:', error);
+    res.status(500).json({ error: 'Failed to delete farm' });
+  }
+});
+
+
+if (process.env.NODE_ENV === 'development') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+} else {
+  // Export the handler for Netlify Functions
+  module.exports.handler = serverless(app);
+}
 
 
 //const express = require('express');
@@ -101,14 +119,22 @@ module.exports.handler = serverless(app);
 //
 //// Middleware
 //app.use(bodyParser.json());
-//app.use(cors({
-//  origin: '*',
-//  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//  allowedHeaders: ['Content-Type', 'Authorization']
+//
+//const allowedOrigins = ['https://farme-manager.netlify.app', 'https://main--farme-manager.netlify.app',];
+//
+//app.use(cors((req, callback) => {
+//  let corsOptions;
+//  if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
+//    corsOptions = { origin: true, methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] };
+//  } else {
+//    corsOptions = { origin: false };
+//  }
+//  callback(null, corsOptions);
 //}));
 //
 //// MongoDB connection
 //const uri = process.env.MONGODB_URI;
+//
 //if (!uri) {
 //  console.error('MONGODB_URI is not defined');
 //} else {
@@ -163,6 +189,6 @@ module.exports.handler = serverless(app);
 //    res.status(500).json({ error: 'Failed to update farm' });
 //  }
 //});
-
-// Export the handler for Netlify Functions
-module.exports.handler = serverless(app);
+//
+//// Export the handler for Netlify Functions
+//module.exports.handler = serverless(app);
