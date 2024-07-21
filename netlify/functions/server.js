@@ -76,6 +76,17 @@ app.post('/api/farms', async (req, res) => {
   }
 });
 
+app.delete('/api/farms/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Farm.findByIdAndDelete(id);
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error deleting farm:', error);
+    res.status(500).json({ error: 'Failed to delete farm' });
+  }
+});
+
 const logAction = async (req, actionDescription) => {
   const logData = {
     user: req.body.user || 'Unknown', // Adjust as needed to fetch user details
