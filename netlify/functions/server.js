@@ -87,6 +87,17 @@ app.delete('/api/farms/:id', async (req, res) => {
   }
 });
 
+app.put('/api/farms/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedFarm = await Farm.findByIdAndUpdate(id, req.body, { new: true });
+    res.json(updatedFarm);
+  } catch (error) {
+    console.error('Error updating farm:', error);
+    res.status(500).json({ error: 'Failed to update farm' });
+  }
+});
+
 const logAction = async (req, actionDescription) => {
   const logData = {
     user: req.body.user || 'Unknown', // Adjust as needed to fetch user details
